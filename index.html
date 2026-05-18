@@ -1,0 +1,425 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría Patrimonial - Control Estratégico</title>
+    <!-- Tailwind CSS para una interfaz brutalista y limpia -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(51, 65, 85, 0.5); backdrop-filter: blur(10px); }
+        input, select { background-color: #020617; border: 1px solid #334155; color: #f8fafc; }
+        input:focus, select:focus { outline: none; border-color: #10b981; }
+        /* Scrollbar minimalista */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col gap-6" onload="App.init()">
+
+    <!-- Cabecera y Controles de Datos -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-panel p-6 rounded-xl">
+        <div>
+            <h1 class="text-2xl font-black tracking-tight uppercase text-emerald-400">Auditoría Patrimonial</h1>
+            <p class="text-sm text-slate-400">Sistema Autónomo de Gestión de Riesgos y Asignación de Capital</p>
+        </div>
+        <div class="flex gap-2">
+            <!-- Módulo de Soberanía de Datos -->
+            <button onclick="App.exportData()" class="bg-slate-800 hover:bg-slate-700 text-xs font-bold py-2 px-4 rounded border border-slate-600 transition-colors">
+                Exportar Backup (JSON)
+            </button>
+            <label class="bg-slate-800 hover:bg-slate-700 text-xs font-bold py-2 px-4 rounded border border-slate-600 cursor-pointer transition-colors">
+                Restaurar Backup
+                <input type="file" id="importFile" class="hidden" accept=".json" onchange="App.importData(event)">
+            </label>
+            <button onclick="App.hardReset()" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 text-xs font-bold py-2 px-4 rounded border border-red-800 transition-colors">
+                Purgar Datos
+            </button>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- COLUMNA IZQUIERDA: Flujo Mensual y Presupuesto -->
+        <div class="lg:col-span-5 space-y-6">
+            
+            <!-- Ingreso y KPIs -->
+            <div class="glass-panel p-6 rounded-xl space-y-4">
+                <h2 class="text-sm font-bold uppercase text-slate-300 border-b border-slate-700 pb-2">Flujo de Entrada Mensual</h2>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Ingreso Neto (S/)</label>
+                    <input type="number" id="inputIncome" oninput="App.saveAndRender()" class="w-full text-2xl font-black px-4 py-2 rounded" placeholder="0.00">
+                </div>
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                        <span class="text-[10px] uppercase text-slate-500 font-bold">Gasto Total Real</span>
+                        <div class="text-xl font-bold text-white" id="kpiGasto">S/ 0.00</div>
+                    </div>
+                    <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                        <span class="text-[10px] uppercase text-slate-500 font-bold">Disponible Corriente</span>
+                        <div class="text-xl font-bold text-sky-400" id="kpiDisponible">S/ 0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard 50/30/20 -->
+            <div class="glass-panel p-6 rounded-xl space-y-5">
+                <h2 class="text-sm font-bold uppercase text-slate-300 border-b border-slate-700 pb-2 flex justify-between">
+                    <span>Ejecución Presupuestal</span>
+                    <span class="text-emerald-500">Regla 50/30/20</span>
+                </h2>
+                
+                <!-- Necesidades -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300 font-medium">Necesidades (50%)</span>
+                        <span class="text-slate-400 font-mono" id="lblNec">S/ 0 de S/ 0</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                        <div id="barNec" class="bg-blue-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Deseos -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300 font-medium">Deseos (30%)</span>
+                        <span class="text-slate-400 font-mono" id="lblDes">S/ 0 de S/ 0</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                        <div id="barDes" class="bg-amber-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Inversión -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300 font-medium">Inversión / Excedente (20%)</span>
+                        <span class="text-slate-400 font-mono" id="lblInv">S/ 0 de S/ 0</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                        <div id="barInv" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Transacciones -->
+            <div class="glass-panel p-6 rounded-xl space-y-4">
+                <h2 class="text-sm font-bold uppercase text-slate-300 border-b border-slate-700 pb-2">Registrar Movimiento</h2>
+                <form id="formTx" onsubmit="App.addTransaction(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Concepto / Descripción</label>
+                        <input type="text" id="txDesc" required class="w-full px-3 py-2 rounded text-sm" placeholder="Ej: Pago alquiler, iO, Trámite Indecopi...">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Monto (S/)</label>
+                            <input type="number" step="0.01" id="txMonto" required class="w-full px-3 py-2 rounded text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Categoría</label>
+                            <select id="txCat" class="w-full px-3 py-2 rounded text-sm">
+                                <option value="Necesidades">Necesidades</option>
+                                <option value="Deseos">Deseos</option>
+                                <option value="Inversión">Inversión</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded transition-colors text-sm">
+                        Procesar y Guardar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Bóvedas y Tabla -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Posición Patrimonial (Bóvedas) -->
+            <div class="glass-panel p-6 rounded-xl space-y-4">
+                <h2 class="text-sm font-bold uppercase text-slate-300 border-b border-slate-700 pb-2">Posición Patrimonial Estática</h2>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- BCP -->
+                    <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                        <label class="block text-[10px] uppercase font-bold text-slate-400">BCP (Flujo)</label>
+                        <div class="flex items-center mt-1">
+                            <span class="text-sm text-slate-500 mr-1">S/</span>
+                            <input type="number" id="vBcp" oninput="App.saveAndRender()" class="w-full bg-transparent text-lg font-bold text-white p-0 border-none">
+                        </div>
+                    </div>
+                    <!-- Pichincha -->
+                    <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                        <label class="block text-[10px] uppercase font-bold text-amber-400">Pichincha (Fondo)</label>
+                        <div class="flex items-center mt-1">
+                            <span class="text-sm text-slate-500 mr-1">S/</span>
+                            <input type="number" id="vPichincha" oninput="App.saveAndRender()" class="w-full bg-transparent text-lg font-bold text-white p-0 border-none">
+                        </div>
+                    </div>
+                    <!-- DPF -->
+                    <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                        <label class="block text-[10px] uppercase font-bold text-indigo-400">Caja / DPF</label>
+                        <div class="flex items-center mt-1">
+                            <span class="text-sm text-slate-500 mr-1">S/</span>
+                            <input type="number" id="vDpf" oninput="App.saveAndRender()" class="w-full bg-transparent text-lg font-bold text-white p-0 border-none">
+                        </div>
+                    </div>
+                    <!-- ETFs -->
+                    <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                        <label class="block text-[10px] uppercase font-bold text-emerald-400">Bróker (ETFs)</label>
+                        <div class="flex items-center mt-1">
+                            <span class="text-sm text-slate-500 mr-1">S/</span>
+                            <input type="number" id="vEtf" oninput="App.saveAndRender()" class="w-full bg-transparent text-lg font-bold text-white p-0 border-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-900 p-4 rounded-lg border border-slate-700">
+                    <span class="font-bold text-slate-300">Patrimonio Neto Total:</span>
+                    <span class="text-2xl font-black text-emerald-400" id="kpiNetWorth">S/ 0.00</span>
+                </div>
+            </div>
+
+            <!-- Tabla de Registros -->
+            <div class="glass-panel p-6 rounded-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h2 class="text-sm font-bold uppercase text-slate-300">Auditoría de Movimientos</h2>
+                    <button onclick="App.exportCSV()" class="text-xs text-slate-400 hover:text-white underline">Descargar CSV</button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-slate-500 text-xs uppercase border-b border-slate-800">
+                                <th class="py-2">Fecha</th>
+                                <th class="py-2">Concepto</th>
+                                <th class="py-2">Categoría</th>
+                                <th class="py-2 text-right">Monto</th>
+                                <th class="py-2 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txTableBody" class="divide-y divide-slate-800/50">
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="text-center py-8 text-slate-600 text-sm hidden">
+                        No hay registros de salidas de capital.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Motor Lógico de JavaScript -->
+    <script>
+        const App = {
+            state: {
+                income: 0,
+                vaults: { bcp: 0, pichincha: 0, dpf: 0, etf: 0 },
+                transactions: []
+            },
+            storageKey: 'AUDITORIA_DB_V1',
+
+            // Inicialización y Carga de Datos
+            init() {
+                const raw = localStorage.getItem(this.storageKey);
+                if (raw) {
+                    try {
+                        this.state = JSON.parse(raw);
+                    } catch(e) {
+                        console.error("Base de datos corrupta. Reiniciando.");
+                    }
+                }
+                
+                // Setear inputs visuales con los datos cargados
+                document.getElementById('inputIncome').value = this.state.income || '';
+                document.getElementById('vBcp').value = this.state.vaults.bcp || '';
+                document.getElementById('vPichincha').value = this.state.vaults.pichincha || '';
+                document.getElementById('vDpf').value = this.state.vaults.dpf || '';
+                document.getElementById('vEtf').value = this.state.vaults.etf || '';
+                
+                this.render();
+            },
+
+            // Motor de Guardado
+            saveAndRender() {
+                // Actualizar estado desde la interfaz
+                this.state.income = parseFloat(document.getElementById('inputIncome').value) || 0;
+                this.state.vaults.bcp = parseFloat(document.getElementById('vBcp').value) || 0;
+                this.state.vaults.pichincha = parseFloat(document.getElementById('vPichincha').value) || 0;
+                this.state.vaults.dpf = parseFloat(document.getElementById('vDpf').value) || 0;
+                this.state.vaults.etf = parseFloat(document.getElementById('vEtf').value) || 0;
+                
+                localStorage.setItem(this.storageKey, JSON.stringify(this.state));
+                this.render();
+            },
+
+            // Procesamiento de Transacciones
+            addTransaction(e) {
+                e.preventDefault();
+                const desc = document.getElementById('txDesc').value.trim();
+                const amount = parseFloat(document.getElementById('txMonto').value);
+                const category = document.getElementById('txCat').value;
+                
+                if(!desc || isNaN(amount) || amount <= 0) return;
+
+                const tx = {
+                    id: crypto.randomUUID(),
+                    date: new Date().toISOString().split('T')[0],
+                    desc,
+                    category,
+                    amount
+                };
+
+                this.state.transactions.unshift(tx); // Agregar al inicio
+                
+                // Limpiar formulario
+                document.getElementById('txDesc').value = '';
+                document.getElementById('txMonto').value = '';
+                
+                this.saveAndRender();
+            },
+
+            deleteTransaction(id) {
+                this.state.transactions = this.state.transactions.filter(tx => tx.id !== id);
+                this.saveAndRender();
+            },
+
+            // Motor de Renderizado (Actualización de Interfaz)
+            render() {
+                const { income, transactions, vaults } = this.state;
+                
+                // 1. Cálculos de Presupuesto
+                let spentNec = 0, spentDes = 0, spentInv = 0;
+                transactions.forEach(tx => {
+                    if(tx.category === 'Necesidades') spentNec += tx.amount;
+                    if(tx.category === 'Deseos') spentDes += tx.amount;
+                    if(tx.category === 'Inversión') spentInv += tx.amount;
+                });
+                
+                const totalSpent = spentNec + spentDes + spentInv;
+                const available = income - totalSpent;
+
+                document.getElementById('kpiGasto').innerText = `S/ ${totalSpent.toFixed(2)}`;
+                const elDisp = document.getElementById('kpiDisponible');
+                elDisp.innerText = `S/ ${available.toFixed(2)}`;
+                elDisp.className = available < 0 ? "text-xl font-bold text-red-500" : "text-xl font-bold text-sky-400";
+
+                // 2. Límites 50/30/20
+                const limNec = income * 0.5;
+                const limDes = income * 0.3;
+                const limInv = income * 0.2;
+
+                const calcWidth = (spent, limit) => limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
+                
+                document.getElementById('lblNec').innerText = `S/ ${spentNec.toFixed(0)} de S/ ${limNec.toFixed(0)}`;
+                document.getElementById('barNec').style.width = `${calcWidth(spentNec, limNec)}%`;
+                document.getElementById('barNec').className = spentNec > limNec ? "bg-red-500 h-full transition-all" : "bg-blue-500 h-full transition-all";
+
+                document.getElementById('lblDes').innerText = `S/ ${spentDes.toFixed(0)} de S/ ${limDes.toFixed(0)}`;
+                document.getElementById('barDes').style.width = `${calcWidth(spentDes, limDes)}%`;
+                document.getElementById('barDes').className = spentDes > limDes ? "bg-red-500 h-full transition-all" : "bg-amber-500 h-full transition-all";
+
+                document.getElementById('lblInv').innerText = `S/ ${spentInv.toFixed(0)} de S/ ${limInv.toFixed(0)}`;
+                document.getElementById('barInv').style.width = `${calcWidth(spentInv, limInv)}%`;
+                document.getElementById('barInv').className = "bg-emerald-500 h-full transition-all";
+
+                // 3. Patrimonio Neto
+                const netWorth = vaults.bcp + vaults.pichincha + vaults.dpf + vaults.etf;
+                document.getElementById('kpiNetWorth').innerText = `S/ ${netWorth.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+
+                // 4. Renderizar Tabla
+                const tbody = document.getElementById('txTableBody');
+                const emptyState = document.getElementById('emptyState');
+                tbody.innerHTML = '';
+                
+                if(transactions.length === 0) {
+                    emptyState.classList.remove('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                    transactions.forEach(tx => {
+                        let badgeCol = "text-blue-400 bg-blue-900/30 border-blue-800";
+                        if(tx.category === 'Deseos') badgeCol = "text-amber-400 bg-amber-900/30 border-amber-800";
+                        if(tx.category === 'Inversión') badgeCol = "text-emerald-400 bg-emerald-900/30 border-emerald-800";
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="py-3 font-mono text-slate-400">${tx.date}</td>
+                            <td class="py-3 text-white">${tx.desc}</td>
+                            <td class="py-3"><span class="px-2 py-1 text-[10px] uppercase font-bold rounded border ${badgeCol}">${tx.category}</span></td>
+                            <td class="py-3 text-right font-mono font-bold text-slate-300">S/ ${tx.amount.toFixed(2)}</td>
+                            <td class="py-3 text-center"><button onclick="App.deleteTransaction('${tx.id}')" class="text-slate-500 hover:text-red-400 font-bold">×</button></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            },
+
+            // Soberanía de Datos: Exportar Backup Completo
+            exportData() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state));
+                const node = document.createElement('a');
+                node.setAttribute("href", dataStr);
+                node.setAttribute("download", `auditoria_backup_${new Date().toISOString().split('T')[0]}.json`);
+                document.body.appendChild(node);
+                node.click();
+                node.remove();
+            },
+
+            // Soberanía de Datos: Importar Backup
+            importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedState = JSON.parse(e.target.result);
+                        if(importedState.vaults && importedState.transactions) {
+                            this.state = importedState;
+                            this.saveAndRender();
+                            // Refrescar inputs visuales
+                            document.getElementById('inputIncome').value = this.state.income || '';
+                            document.getElementById('vBcp').value = this.state.vaults.bcp || '';
+                            document.getElementById('vPichincha').value = this.state.vaults.pichincha || '';
+                            document.getElementById('vDpf').value = this.state.vaults.dpf || '';
+                            document.getElementById('vEtf').value = this.state.vaults.etf || '';
+                            alert("Base de datos restaurada con éxito.");
+                        } else {
+                            alert("El archivo JSON no tiene la estructura correcta.");
+                        }
+                    } catch (error) {
+                        alert("Error al leer el archivo. JSON corrupto.");
+                    }
+                };
+                reader.readAsText(file);
+            },
+
+            // Exportación simple a Excel/CSV
+            exportCSV() {
+                if(this.state.transactions.length === 0) return alert("No hay datos.");
+                let csv = "Fecha,Descripcion,Categoria,Monto\n";
+                this.state.transactions.forEach(tx => {
+                    csv += `"${tx.date}","${tx.desc}","${tx.category}",${tx.amount}\n`;
+                });
+                const node = document.createElement('a');
+                node.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csv));
+                node.setAttribute("download", `movimientos_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(node);
+                node.click();
+                node.remove();
+            },
+
+            hardReset() {
+                if(confirm("ESTO BORRARÁ TODA TU BASE DE DATOS LOCAL. ¿Estás seguro? Descarga un backup primero si lo necesitas.")) {
+                    localStorage.removeItem(this.storageKey);
+                    location.reload();
+                }
+            }
+        };
+    </script>
+</body>
+</html>
