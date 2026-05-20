@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoría Patrimonial v3.0 - Visualización Estratégica</title>
+    <title>Auditoría Patrimonial v4.0 - Flujo Bidireccional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -27,7 +27,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-black tracking-tight text-white">Auditoría Patrimonial</h1>
-                <p class="text-xs text-slate-400 uppercase tracking-widest font-semibold mt-1">Inteligencia Financiera Activa</p>
+                <p class="text-xs text-slate-400 uppercase tracking-widest font-semibold mt-1">Control de Flujos Multivariables</p>
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
@@ -44,9 +44,15 @@
         
         <!-- Ingresos y Ejecución -->
         <div class="glass-panel p-6 flex flex-col justify-between gap-4">
-            <div class="border-b border-slate-800 pb-3">
-                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Flujo Neto Mensual (S/)</label>
-                <input type="number" id="inputIncome" oninput="App.saveAndRender()" class="w-full text-3xl font-black px-4 py-2 bg-slate-950 rounded-lg text-emerald-400" placeholder="0.00">
+            <div class="border-b border-slate-800 pb-3 space-y-3">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Ingreso Fijo Base (S/)</label>
+                    <input type="number" id="inputIncome" oninput="App.saveAndRender()" class="w-full text-xl font-bold px-3 py-1.5 bg-slate-950 rounded text-slate-300 border-slate-800" placeholder="0.00">
+                </div>
+                <div class="bg-slate-900/50 p-2 rounded flex justify-between items-center border border-emerald-900/30">
+                    <span class="text-xs font-bold text-emerald-500 uppercase">Total Operativo Mes</span>
+                    <span class="text-2xl font-black text-emerald-400" id="kpiTotalIncome">S/ 0.00</span>
+                </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -69,7 +75,7 @@
                     <input type="number" id="vBcp" oninput="App.saveAndRender()" class="w-full bg-transparent text-lg font-bold text-white mt-1 border-none px-0 focus:ring-0">
                 </div>
                 <div class="bg-slate-950 p-3 rounded-lg border border-slate-800/80">
-                    <label class="block text-[10px] uppercase font-bold text-amber-400">Pichincha (Fondo)</label>
+                    <label class="block text-[10px] uppercase font-bold text-amber-400">Financiera (Fondo)</label>
                     <input type="number" id="vPichincha" oninput="App.saveAndRender()" class="w-full bg-transparent text-lg font-bold text-white mt-1 border-none px-0 focus:ring-0">
                 </div>
                 <div class="bg-slate-950 p-3 rounded-lg border border-slate-800/80">
@@ -82,7 +88,7 @@
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center">
-                <span class="text-sm font-bold text-slate-400 uppercase">Patrimonio Neto:</span>
+                <span class="text-sm font-bold text-slate-400 uppercase">Patrimonio Neto Estático:</span>
                 <span class="text-2xl font-black text-white" id="kpiNetWorth">S/ 0.00</span>
             </div>
         </div>
@@ -98,9 +104,21 @@
             <div class="glass-panel p-6">
                 <h2 class="text-sm font-bold uppercase text-slate-300 border-b border-slate-800 pb-3 mb-4">Ingreso de Operaciones</h2>
                 <form id="formTx" onsubmit="App.addTransaction(event)" class="space-y-4">
+                    
+                    <div class="flex gap-4 p-1 bg-slate-950 rounded-lg border border-slate-800">
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="txType" value="egreso" class="peer hidden" checked onchange="App.toggleTransactionType()">
+                            <div class="py-2 text-xs font-bold text-slate-500 uppercase rounded peer-checked:bg-slate-800 peer-checked:text-white transition-all">Salida (Gasto)</div>
+                        </label>
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="txType" value="ingreso" class="peer hidden" onchange="App.toggleTransactionType()">
+                            <div class="py-2 text-xs font-bold text-slate-500 uppercase rounded peer-checked:bg-emerald-900/40 peer-checked:text-emerald-400 peer-checked:border peer-checked:border-emerald-800 transition-all">Entrada (Extra)</div>
+                        </label>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Concepto Específico</label>
-                        <input type="text" id="txDesc" required class="w-full px-3 py-2 bg-slate-950 rounded-lg text-sm" placeholder="Ej: Pasajes, Cineplanet, Pago Luz...">
+                        <input type="text" id="txDesc" required class="w-full px-3 py-2 bg-slate-950 rounded-lg text-sm" placeholder="Ej: Pasajes, Asesoría, Venta...">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -110,9 +128,7 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-400 mb-1">Categoría Macro</label>
                             <select id="txCat" onchange="App.updateSubcatSelect()" class="w-full px-3 py-2 bg-slate-950 rounded-lg text-sm">
-                                <option value="Necesidades">Necesidades</option>
-                                <option value="Deseos">Deseos</option>
-                                <option value="Inversión">Inversión</option>
+                                <!-- Llenado por JS -->
                             </select>
                         </div>
                     </div>
@@ -122,7 +138,7 @@
                             <!-- Llenado por JS -->
                         </select>
                     </div>
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg transition-colors text-sm uppercase tracking-wide mt-2 shadow-lg shadow-emerald-900/20">
+                    <button type="submit" id="btnSubmit" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-lg transition-colors text-sm uppercase tracking-wide mt-2 shadow-lg">
                         Procesar Registro
                     </button>
                 </form>
@@ -130,7 +146,10 @@
 
             <!-- Progreso 50/30/20 -->
             <div class="glass-panel p-6">
-                <h2 class="text-sm font-bold uppercase text-slate-300 border-b border-slate-800 pb-3 mb-4">Regla 50/30/20</h2>
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                    <h2 class="text-sm font-bold uppercase text-slate-300">Regla 50/30/20</h2>
+                    <span class="text-[10px] text-slate-500 uppercase font-bold" id="lblBaseCalc">Base: S/ 0.00</span>
+                </div>
                 <div class="space-y-4">
                     <div>
                         <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-300">Necesidades</span><span id="lblNec" class="text-slate-400 font-mono"></span></div>
@@ -151,7 +170,6 @@
         <!-- Panel Central y Derecho: Gráficos -->
         <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <!-- Gráfico: Diversificación -->
             <div class="glass-panel p-6 flex flex-col items-center justify-center">
                 <h2 class="text-sm font-bold uppercase text-slate-300 w-full text-left border-b border-slate-800 pb-3 mb-4">Mapa de Exposición Patrimonial</h2>
                 <div class="relative w-full max-w-[280px] aspect-square">
@@ -159,7 +177,6 @@
                 </div>
             </div>
 
-            <!-- Gráfico: Fugas de Capital (Subcategorías) -->
             <div class="glass-panel p-6 flex flex-col">
                 <h2 class="text-sm font-bold uppercase text-slate-300 w-full text-left border-b border-slate-800 pb-3 mb-4">Auditoría de Salidas (Subcategorías)</h2>
                 <div class="relative w-full flex-1 min-h-[250px]">
@@ -173,9 +190,8 @@
     <!-- Fila 3: Filtros y Base de Datos Histórica -->
     <div class="glass-panel p-6 mb-8">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-4 mb-4 gap-4">
-            <h2 class="text-sm font-bold uppercase text-slate-300">Segmentación y Base de Datos Histórica</h2>
+            <h2 class="text-sm font-bold uppercase text-slate-300">Registro Histórico Integral</h2>
             
-            <!-- Herramientas de Filtrado -->
             <div class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center gap-2">
                     <label class="text-xs text-slate-400">Mes:</label>
@@ -184,10 +200,9 @@
                 <div class="flex items-center gap-2">
                     <label class="text-xs text-slate-400">Filtro:</label>
                     <select id="filterCat" onchange="App.renderTable()" class="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200">
-                        <option value="ALL">Todas las Categorías</option>
-                        <option value="Necesidades">Solo Necesidades</option>
-                        <option value="Deseos">Solo Deseos</option>
-                        <option value="Inversión">Solo Inversión</option>
+                        <option value="ALL">Todo</option>
+                        <option value="egreso">Solo Egresos</option>
+                        <option value="ingreso">Solo Ingresos Extras</option>
                     </select>
                 </div>
                 <button onclick="App.exportCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1.5 rounded transition-colors ml-auto">Descargar CSV</button>
@@ -198,9 +213,10 @@
             <table class="w-full text-left text-sm border-collapse">
                 <thead>
                     <tr class="text-slate-500 text-xs uppercase border-b border-slate-800/80">
+                        <th class="py-3 px-2 font-semibold">Tipo</th>
                         <th class="py-3 px-2 font-semibold">Fecha</th>
                         <th class="py-3 px-2 font-semibold">Concepto</th>
-                        <th class="py-3 px-2 font-semibold">Categoría / Sub</th>
+                        <th class="py-3 px-2 font-semibold">Clasificación</th>
                         <th class="py-3 px-2 font-semibold text-right">Monto</th>
                         <th class="py-3 px-2 font-semibold text-center">Ctrl</th>
                     </tr>
@@ -212,14 +228,9 @@
             <div id="emptyState" class="text-center py-10 text-slate-600 text-sm hidden border-b border-slate-800/40">
                 La consulta no arrojó resultados.
             </div>
-            <div class="pt-4 flex justify-end gap-4 text-xs font-bold font-mono">
-                <span class="text-slate-500">Total Filtrado:</span>
-                <span id="lblTotalFilter" class="text-white">S/ 0.00</span>
-            </div>
         </div>
     </div>
 
-    <!-- Lógica Core -->
     <script>
         const App = {
             state: {
@@ -227,18 +238,22 @@
                 vaults: { bcp: 0, pichincha: 0, dpf: 0, etf: 0 },
                 transactions: []
             },
-            storageKey: 'AUDITORIA_DB_V3',
+            storageKey: 'AUDITORIA_DB_V4',
             charts: { patrimonio: null, gastos: null },
 
-            // Matriz Estructurada de Subcategorías (Adaptada al perfil legal/estratégico)
+            categories: {
+                egreso: ['Necesidades', 'Deseos', 'Inversión'],
+                ingreso: ['Ingresos Extraordinarios']
+            },
+
             subcats: {
                 'Necesidades': ['Alquiler / Vivienda', 'Alimentación Básica', 'Servicios (Luz/Agua/Net)', 'Transporte / ATU', 'Salud / Farmacia'],
                 'Deseos': ['Restaurantes / Fast Food', 'Cafeterías', 'Ropa / Calzado', 'Cine / Entretenimiento', 'Suscripciones / Apps', 'Gastos Hormiga'],
-                'Inversión': ['ETFs / Acciones', 'Fondos Mutuos', 'Educación / Diplomados', 'Fondo Emergencia', 'Equipamiento Tech']
+                'Inversión': ['ETFs / Acciones', 'Fondos Mutuos', 'Educación / Diplomados', 'Fondo Emergencia', 'Equipamiento Tech'],
+                'Ingresos Extraordinarios': ['Honorarios / Asesorías', 'Bonos / Aguinaldos', 'Venta de Activos', 'Regalos / Otros']
             },
 
             init() {
-                // Tema oscuro estricto para Chart.js
                 Chart.defaults.color = '#94a3b8';
                 Chart.defaults.font.family = 'Inter';
 
@@ -248,28 +263,43 @@
                     catch(e) { console.error("Error BD"); }
                 }
 
-                // Cargar valores a inputs
                 document.getElementById('inputIncome').value = this.state.income || '';
                 document.getElementById('vBcp').value = this.state.vaults.bcp || '';
                 document.getElementById('vPichincha').value = this.state.vaults.pichincha || '';
                 document.getElementById('vDpf').value = this.state.vaults.dpf || '';
                 document.getElementById('vEtf').value = this.state.vaults.etf || '';
                 
-                // Mes por defecto en filtro (Mes Actual)
                 const now = new Date();
                 document.getElementById('filterMonth').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}`;
 
-                this.updateSubcatSelect();
+                this.toggleTransactionType();
                 this.render();
+            },
+
+            toggleTransactionType() {
+                const type = document.querySelector('input[name="txType"]:checked').value;
+                const catSelect = document.getElementById('txCat');
+                const btn = document.getElementById('btnSubmit');
+                
+                catSelect.innerHTML = '';
+                this.categories[type].forEach(cat => catSelect.add(new Option(cat, cat)));
+                
+                if (type === 'ingreso') {
+                    btn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg transition-colors text-sm uppercase tracking-wide mt-2 shadow-lg shadow-emerald-900/20";
+                } else {
+                    btn.className = "w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-lg transition-colors text-sm uppercase tracking-wide mt-2 shadow-lg";
+                }
+
+                this.updateSubcatSelect();
             },
 
             updateSubcatSelect() {
                 const cat = document.getElementById('txCat').value;
                 const selectSub = document.getElementById('txSubcat');
                 selectSub.innerHTML = '';
-                this.subcats[cat].forEach(sub => {
-                    selectSub.add(new Option(sub, sub));
-                });
+                if(this.subcats[cat]) {
+                    this.subcats[cat].forEach(sub => selectSub.add(new Option(sub, sub)));
+                }
             },
 
             saveAndRender() {
@@ -284,6 +314,7 @@
 
             addTransaction(e) {
                 e.preventDefault();
+                const type = document.querySelector('input[name="txType"]:checked').value;
                 const desc = document.getElementById('txDesc').value.trim();
                 const amount = parseFloat(document.getElementById('txMonto').value);
                 const category = document.getElementById('txCat').value;
@@ -293,6 +324,7 @@
 
                 this.state.transactions.unshift({
                     id: crypto.randomUUID(),
+                    type: type, // egreso o ingreso
                     date: new Date().toISOString().split('T')[0],
                     desc, category, subcategory, amount
                 });
@@ -308,35 +340,39 @@
             },
 
             render() {
-                this.renderMetrics();
-                this.renderCharts();
-                this.renderTable();
-            },
-
-            renderMetrics() {
                 const { income, transactions, vaults } = this.state;
-                
-                // Filtrar solo los gastos del mes actual para los KPIs
                 const currentMonth = new Date().toISOString().slice(0, 7);
                 let txCurrentMonth = transactions.filter(tx => tx.date.startsWith(currentMonth));
 
-                let spentNec = 0, spentDes = 0, spentInv = 0;
+                let spentNec = 0, spentDes = 0, spentInv = 0, extraIncome = 0;
+                
                 txCurrentMonth.forEach(tx => {
-                    if(tx.category === 'Necesidades') spentNec += tx.amount;
-                    if(tx.category === 'Deseos') spentDes += tx.amount;
-                    if(tx.category === 'Inversión') spentInv += tx.amount;
+                    // Parche de retrocompatibilidad: si no tiene tipo, es egreso
+                    const txType = tx.type || 'egreso';
+                    
+                    if (txType === 'ingreso') {
+                        extraIncome += tx.amount;
+                    } else {
+                        if(tx.category === 'Necesidades') spentNec += tx.amount;
+                        if(tx.category === 'Deseos') spentDes += tx.amount;
+                        if(tx.category === 'Inversión') spentInv += tx.amount;
+                    }
                 });
                 
+                const totalOperatingIncome = income + extraIncome;
+                document.getElementById('kpiTotalIncome').innerText = `S/ ${totalOperatingIncome.toFixed(2)}`;
+                document.getElementById('lblBaseCalc').innerText = `Base: S/ ${totalOperatingIncome.toFixed(2)}`;
+
                 const totalSpent = spentNec + spentDes + spentInv;
                 document.getElementById('kpiGasto').innerText = `S/ ${totalSpent.toFixed(2)}`;
                 
-                const available = income - totalSpent;
+                const available = totalOperatingIncome - totalSpent;
                 const elDisp = document.getElementById('kpiDisponible');
                 elDisp.innerText = `S/ ${available.toFixed(2)}`;
                 elDisp.className = available < 0 ? "text-xl font-bold text-red-500" : "text-xl font-bold text-sky-400";
 
-                // Regla 50/30/20
-                const lNec = income * 0.5, lDes = income * 0.3, lInv = income * 0.2;
+                // Regla 50/30/20 auto-escalable
+                const lNec = totalOperatingIncome * 0.5, lDes = totalOperatingIncome * 0.3, lInv = totalOperatingIncome * 0.2;
                 const cw = (s, l) => l > 0 ? Math.min((s / l) * 100, 100) : 0;
                 
                 document.getElementById('lblNec').innerText = `S/ ${spentNec.toFixed(0)} de S/ ${lNec.toFixed(0)}`;
@@ -352,71 +388,49 @@
 
                 const netWorth = vaults.bcp + vaults.pichincha + vaults.dpf + vaults.etf;
                 document.getElementById('kpiNetWorth').innerText = `S/ ${netWorth.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+
+                this.renderCharts(txCurrentMonth);
+                this.renderTable();
             },
 
-            renderCharts() {
+            renderCharts(txCurrentMonth) {
                 // 1. Gráfico Patrimonial (Doughnut)
                 const v = this.state.vaults;
-                const patData = [v.bcp, v.pichincha, v.dpf, v.etf];
-                
                 if (this.charts.patrimonio) this.charts.patrimonio.destroy();
-                const ctxPat = document.getElementById('chartPatrimonio').getContext('2d');
-                this.charts.patrimonio = new Chart(ctxPat, {
+                this.charts.patrimonio = new Chart(document.getElementById('chartPatrimonio').getContext('2d'), {
                     type: 'doughnut',
                     data: {
-                        labels: ['BCP (Liquidez)', 'Pichincha (Ahorro)', 'Caja/DPF (Renta Fija)', 'ETFs (Bolsa)'],
+                        labels: ['BCP (Liquidez)', 'Fondo/Ahorro', 'Caja/DPF', 'ETFs (Bolsa)'],
                         datasets: [{
-                            data: patData,
+                            data: [v.bcp, v.pichincha, v.dpf, v.etf],
                             backgroundColor: ['#38bdf8', '#fbbf24', '#818cf8', '#34d399'],
-                            borderColor: '#0f172a',
-                            borderWidth: 4,
-                            hoverOffset: 4
+                            borderColor: '#0f172a', borderWidth: 4
                         }]
                     },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
-                        cutout: '70%'
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
                 });
 
-                // 2. Gráfico de Salidas por Subcategoría (Bar)
-                // Usamos el mes seleccionado en el filtro para que el gráfico sea dinámico
-                const filterMonth = document.getElementById('filterMonth').value;
-                let activeTx = this.state.transactions;
-                if(filterMonth) activeTx = activeTx.filter(tx => tx.date.startsWith(filterMonth));
-
-                // Agrupar por subcategoría
+                // 2. Gráfico de Egresos por Subcategoría
+                // Filtramos SOLO egresos del mes actual
+                const egresosMes = txCurrentMonth.filter(tx => (tx.type || 'egreso') === 'egreso');
                 const subSums = {};
-                activeTx.forEach(tx => {
-                    subSums[tx.subcategory] = (subSums[tx.subcategory] || 0) + tx.amount;
-                });
+                egresosMes.forEach(tx => { subSums[tx.subcategory] = (subSums[tx.subcategory] || 0) + tx.amount; });
 
-                // Ordenar de mayor a menor para mejor lectura analítica
                 const sortedSubs = Object.keys(subSums).sort((a,b) => subSums[b] - subSums[a]);
                 const sortedVals = sortedSubs.map(k => subSums[k]);
 
                 if (this.charts.gastos) this.charts.gastos.destroy();
-                const ctxGas = document.getElementById('chartGastos').getContext('2d');
-                this.charts.gastos = new Chart(ctxGas, {
+                this.charts.gastos = new Chart(document.getElementById('chartGastos').getContext('2d'), {
                     type: 'bar',
                     data: {
-                        labels: sortedSubs.length > 0 ? sortedSubs : ['Sin datos'],
+                        labels: sortedSubs.length > 0 ? sortedSubs : ['Sin Egresos'],
                         datasets: [{
                             label: 'Gasto Ejecutado (S/)',
                             data: sortedVals.length > 0 ? sortedVals : [0],
-                            backgroundColor: '#10b981',
-                            borderRadius: 4
+                            backgroundColor: '#64748b', borderRadius: 4
                         }]
                     },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#1e293b' } },
-                            x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#1e293b' } }, x: { grid: { display: false } } } }
                 });
             },
 
@@ -425,33 +439,34 @@
                 const filterCat = document.getElementById('filterCat').value;
                 
                 let filtered = this.state.transactions;
-                
-                if (filterMonth) {
-                    filtered = filtered.filter(tx => tx.date.startsWith(filterMonth));
-                }
-                if (filterCat !== 'ALL') {
-                    filtered = filtered.filter(tx => tx.category === filterCat);
-                }
+                if (filterMonth) filtered = filtered.filter(tx => tx.date.startsWith(filterMonth));
+                if (filterCat !== 'ALL') filtered = filtered.filter(tx => (tx.type || 'egreso') === filterCat);
 
                 const tbody = document.getElementById('txTableBody');
                 const emptyState = document.getElementById('emptyState');
                 tbody.innerHTML = '';
-                
-                let totalFiltered = 0;
 
                 if(filtered.length === 0) {
                     emptyState.classList.remove('hidden');
                 } else {
                     emptyState.classList.add('hidden');
                     filtered.forEach(tx => {
-                        totalFiltered += tx.amount;
+                        const txType = tx.type || 'egreso';
+                        let isIngreso = txType === 'ingreso';
+                        
                         let bC = "text-blue-400 bg-blue-500/10 border-blue-500/20";
                         if(tx.category === 'Deseos') bC = "text-amber-400 bg-amber-500/10 border-amber-500/20";
                         if(tx.category === 'Inversión') bC = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                        if(isIngreso) bC = "text-emerald-300 bg-emerald-900/30 border-emerald-700";
 
                         const tr = document.createElement('tr');
                         tr.className = "hover:bg-slate-900/30 transition-colors group";
                         tr.innerHTML = `
+                            <td class="py-3 px-2">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center ${isIngreso ? 'bg-emerald-900/50 text-emerald-400' : 'bg-slate-800 text-slate-400'}">
+                                    ${isIngreso ? '+' : '-'}
+                                </div>
+                            </td>
                             <td class="py-3 px-2 font-mono text-[11px] text-slate-400">${tx.date}</td>
                             <td class="py-3 px-2 text-white font-medium truncate max-w-[150px]">${tx.desc}</td>
                             <td class="py-3 px-2">
@@ -460,21 +475,15 @@
                                     <span class="text-[10px] text-slate-500 truncate max-w-[120px]">${tx.subcategory}</span>
                                 </div>
                             </td>
-                            <td class="py-3 px-2 text-right font-mono font-bold text-slate-200">S/ ${tx.amount.toFixed(2)}</td>
+                            <td class="py-3 px-2 text-right font-mono font-bold ${isIngreso ? 'text-emerald-400' : 'text-slate-200'}">
+                                ${isIngreso ? '+' : ''} S/ ${tx.amount.toFixed(2)}
+                            </td>
                             <td class="py-3 px-2 text-center">
                                 <button onclick="App.deleteTransaction('${tx.id}')" class="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all font-bold p-1">✕</button>
                             </td>
                         `;
                         tbody.appendChild(tr);
                     });
-                }
-                
-                document.getElementById('lblTotalFilter').innerText = `S/ ${totalFiltered.toFixed(2)}`;
-                
-                // Si el filtro de mes cambia, debemos actualizar el gráfico de barras para reflejar la vista actual
-                // (Se maneja llamando de nuevo a renderCharts si se altera la fecha)
-                if (event && event.target.id === 'filterMonth') {
-                    this.renderCharts();
                 }
             },
 
@@ -491,17 +500,18 @@
                 r.onload = (ev) => {
                     try {
                         const s = JSON.parse(ev.target.result);
-                        if(s.vaults && s.transactions) {
-                            this.state = s; this.saveAndRender(); alert("Datos inyectados al sistema.");
-                        }
+                        if(s.vaults && s.transactions) { this.state = s; this.saveAndRender(); alert("Datos inyectados al sistema."); }
                     } catch(err) { alert("Archivo corrupto."); }
                 }; r.readAsText(f);
             },
 
             exportCSV() {
                 if(this.state.transactions.length===0) return;
-                let c = "Fecha,Descripcion,Categoria,Subcategoria,Monto\n";
-                this.state.transactions.forEach(t => c += `"${t.date}","${t.desc}","${t.category}","${t.subcategory}",${t.amount}\n`);
+                let c = "Tipo,Fecha,Descripcion,Categoria,Subcategoria,Monto\n";
+                this.state.transactions.forEach(t => {
+                    const type = t.type || 'egreso';
+                    c += `"${type}","${t.date}","${t.desc}","${t.category}","${t.subcategory}",${t.amount}\n`;
+                });
                 const n = document.createElement('a'); n.href = "data:text/csv;charset=utf-8," + encodeURIComponent(c);
                 n.download = `filtro_auditoria_${new Date().toISOString().split('T')[0]}.csv`;
                 document.body.appendChild(n); n.click(); n.remove();
